@@ -1,15 +1,11 @@
 from PIL import Image, ImageDraw, ImageFont
+from rembg import remove
 import io
 import qrcode
 import hashlib
 import json
 import requests
-
-
-FUENTES = (
-    ImageFont.truetype("fonts/horizon.otf", size=31),
-    ImageFont.truetype("fonts/GlacialIndifference-Regular.otf", size=33)
-)
+from pathlib import Path
 
 class GeneradorCarnet:
     def __init__(self, datos):
@@ -23,7 +19,7 @@ class GeneradorCarnet:
             "RH": {"x": 378, "y": 576},
             "QR": {"x": 338, "y": 60, "w": 227, "h": 227}
         }
-        self.fuentes = FUENTES
+        self.fuentes = (ImageFont.truetype("fonts/horizon.otf", size = 31), ImageFont.truetype("fonts/GlacialIndifference-Regular.otf", size = 34))
 
     def _generar_qr(self):
 
