@@ -1,11 +1,11 @@
 from PIL import Image, ImageDraw, ImageFont
-from rembg import remove, new_session
 import io
 import qrcode
 import hashlib
 import json
 import requests
 from pathlib import Path
+
 FUENTES = (
     ImageFont.truetype("fonts/horizon.otf", size=31),
     ImageFont.truetype("fonts/GlacialIndifference-Regular.otf", size=33)
