@@ -1,11 +1,15 @@
 from PIL import Image, ImageDraw, ImageFont
-from rembg import remove
+from rembg import remove, new_session
 import io
 import qrcode
 import hashlib
 import json
 import requests
 from pathlib import Path
+FUENTES = (
+    ImageFont.truetype("fonts/horizon.otf", size=31),
+    ImageFont.truetype("fonts/GlacialIndifference-Regular.otf", size=33)
+)
 
 class GeneradorCarnet:
     def __init__(self, datos):
@@ -19,7 +23,7 @@ class GeneradorCarnet:
             "RH": {"x": 378, "y": 576},
             "QR": {"x": 338, "y": 60, "w": 227, "h": 227}
         }
-        self.fuentes = (ImageFont.truetype("fonts/horizon.otf", size = 31), ImageFont.truetype("fonts/GlacialIndifference-Regular.otf", size = 34))
+        self.fuentes = FUENTES
 
     def _generar_qr(self):
 
@@ -47,26 +51,24 @@ class GeneradorCarnet:
     def _procesar_foto(self):
         ruta_foto = self.datos["Foto"]
         if ruta_foto.startswith("http"):
+            # Descargar desde URL
             response = requests.get(ruta_foto)
             if response.status_code != 200:
                 raise Exception("No se pudo descargar la foto desde la URL")
             bytes_img = response.content
         else:
+            # Leer desde archivo local
             with open(ruta_foto, "rb") as f:
                 bytes_img = f.read()
 
-        sin_fondo = remove(bytes_img)
-        # Abrir imagen con transparencia
-        img_transparente = Image.open(io.BytesIO(sin_fondo)).convert("RGBA")
+        # Abrir directamente la imagen (sin remover fondo)
+        img = Image.open(io.BytesIO(bytes_img)).convert("RGB")
 
-        # Crear fondo blanco del mismo tamaño
-        fondo_blanco = Image.new("RGB", img_transparente.size, (255, 255, 255))
-
-        # Pegar imagen transparente encima del fondo blanco
-        fondo_blanco.paste(img_transparente, mask=img_transparente.split()[3])  # canal alpha
-
-        # Redimensionar ya con fondo blanco
-        img_final = fondo_blanco.resize((self.coordenadas["Foto"]["w"], self.coordenadas["Foto"]["h"]), resample=Image.LANCZOS)
+        # Redimensionar
+        img_final = img.resize(
+            (self.coordenadas["Foto"]["w"], self.coordenadas["Foto"]["h"]),
+            resample=Image.LANCZOS
+        )
 
         return img_final
 
