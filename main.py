@@ -19,3 +19,6 @@ def generar_carnet(datos: Carnetizacion):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/")
+async def root():
+    return {"message": "Hello from Render!"}
