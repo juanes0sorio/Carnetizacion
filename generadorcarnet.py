@@ -4,7 +4,7 @@ import qrcode
 import hashlib
 import json
 import requests
-from pathlib import Path
+
 
 FUENTES = (
     ImageFont.truetype("fonts/horizon.otf", size=31),
@@ -48,23 +48,26 @@ class GeneradorCarnet:
 
         return img
 
+    def _construir_url_appsheet(self, ruta_relativa: str) -> str:
+        # Reemplaza esto con el nombre exacto de tu tabla en AppSheet
+        nombre_tabla = "Table 1"
+        base_url = "https://www.appsheet.com/template/gettablefileurl"
+        return f"{base_url}?tableName={nombre_tabla}&fileName={requests.utils.quote(ruta_relativa)}"
+
     def _procesar_foto(self):
         ruta_foto = self.datos["Foto"]
-        if ruta_foto.startswith("http"):
-            # Descargar desde URL
-            response = requests.get(ruta_foto)
-            if response.status_code != 200:
-                raise Exception("No se pudo descargar la foto desde la URL")
-            bytes_img = response.content
-        else:
-            # Leer desde archivo local
-            with open(ruta_foto, "rb") as f:
-                bytes_img = f.read()
 
-        # Abrir directamente la imagen (sin remover fondo)
+        # Si no es URL completa, la convierte usando AppSheet
+        if not ruta_foto.startswith("http"):
+            ruta_foto = self._construir_url_appsheet(ruta_foto)
+
+        response = requests.get(ruta_foto)
+        if response.status_code != 200:
+            raise Exception("No se pudo descargar la foto desde la URL")
+
+        bytes_img = response.content
         img = Image.open(io.BytesIO(bytes_img)).convert("RGB")
 
-        # Redimensionar
         img_final = img.resize(
             (self.coordenadas["Foto"]["w"], self.coordenadas["Foto"]["h"]),
             resample=Image.LANCZOS
