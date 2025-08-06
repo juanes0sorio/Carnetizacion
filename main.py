@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from generadorcarnet import GeneradorCarnet
 import zipfile
 import tempfile
+import os
 app = FastAPI()
 
 class Carnetizacion(BaseModel):
@@ -17,14 +18,24 @@ def generar_carnet(datos: Carnetizacion):
     try:
         generador = GeneradorCarnet(datos.dict())
         cedula = datos.Cedula
-        generador.generar_carnetizacion()
 
-        temp_zip = tempfile.NamedTemporaryFile(delete=False, suffix=".zip")
-        with zipfile.ZipFile(temp_zip.name, 'w') as zipf:
-            zipf.write(f"{cedula}_frontal.png", arcname="frontal.png")
-            zipf.write(f"{cedula}_trasera.png", arcname="trasera.png")
+        # 📌 Usar carpeta temporal para evitar errores en Render
+        with tempfile.TemporaryDirectory() as tmpdir:
+            frontal_path = os.path.join(tmpdir, "frontal.png")
+            trasera_path = os.path.join(tmpdir, "trasera.png")
 
-        return FileResponse(temp_zip.name, media_type='application/zip', filename=f"carnet_{cedula}.zip")
+            # 🎯 Generar imágenes en esa ruta
+            generador.generar_carnetizacion(frontal_path, trasera_path)
+
+            # 📦 Crear archivo ZIP también dentro del tmpdir
+            zip_path = os.path.join(tmpdir, f"carnet_{cedula}.zip")
+            with zipfile.ZipFile(zip_path, 'w') as zipf:
+                zipf.write(frontal_path, arcname="frontal.png")
+                zipf.write(trasera_path, arcname="trasera.png")
+
+            # 🚀 Retornar ZIP como descarga
+            return FileResponse(zip_path, media_type='application/zip', filename=f"carnet_{cedula}.zip")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

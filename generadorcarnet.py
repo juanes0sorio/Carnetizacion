@@ -74,7 +74,7 @@ class GeneradorCarnet:
 
         return img_final
 
-    def generar_carnetizacion(self):
+    def generar_carnetizacion(self, ruta_frontal, ruta_trasera):
 
         frontal = Image.open("templates/Front.png").convert("RGBA")
         trasera = Image.open("templates/Rear.png").convert("RGBA")
@@ -103,8 +103,8 @@ class GeneradorCarnet:
         trasera.paste(qr, (self.coordenadas["QR"]["x"], self.coordenadas["QR"]["y"]))
 
         cedula = self.datos["Cedula"]
-        frontal.save(f"{cedula}_frontal.png")
-        trasera.save(f"{cedula}_trasera.png")
+        frontal.save(ruta_frontal)
+        trasera.save(ruta_trasera)
 
 
 
