@@ -102,7 +102,6 @@ class GeneradorCarnet:
         qr = self._generar_qr()
         trasera.paste(qr, (self.coordenadas["QR"]["x"], self.coordenadas["QR"]["y"]))
 
-        cedula = self.datos["Cedula"]
         frontal.save(ruta_frontal)
         trasera.save(ruta_trasera)
 

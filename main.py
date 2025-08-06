@@ -19,7 +19,7 @@ def generar_carnet(datos: Carnetizacion):
     try:
         generador = GeneradorCarnet(datos.dict())
         cedula = datos.Cedula
-        generador.generar_carnetizacion()
+        generador.generar_carnetizacion("templates/Front.png", "templates/Rear.png")
 
         # Nombre de ZIP temporal (NO usar NamedTemporaryFile aquí)
         zip_path = f"/tmp/carnet_{cedula}.zip"
